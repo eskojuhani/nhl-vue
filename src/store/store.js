@@ -53,19 +53,16 @@ export default new Vuex.Store({
         // If we enough TVs, ask Jenny to remove it
         context.commit('removeTv', amount)
       }
-    },
+    }
+    /*,
     getGames(context) {
       window.console.log("store.actions getGames called", options)
 
-      /*options = {
-          'content-type: application/json',
-          'table: NHLGame',
-          'where: [{"detailedState = ":"Scheduled"}]'
-      }*/
       axios.get(todo_url, { 'headers' : options } )
       .then((response) => {
         context.commit('games', _.uniq(response.data, 'gamePk'))
       });
     }
+    */
   }
 });

@@ -1,9 +1,6 @@
 import { GamesService } from "@/common/api.service";
 import { FETCH_GAMES } from "./actions.type";
-import {
-  FETCH_START,
-  FETCH_END
-} from "./mutations.type";
+import { FETCH_START, FETCH_GAMES_END } from "./mutations.type";
 import _ from 'underscore'
 
 const state = {
@@ -29,7 +26,7 @@ const actions = {
     commit(FETCH_START);
     return GamesService.get(params.filters)
       .then(({ data }) => {
-        commit(FETCH_END, data);
+        commit(FETCH_GAMES_END, data);
       })
       .catch(error => {
         throw new Error(error);
@@ -42,7 +39,7 @@ const mutations = {
   [FETCH_START](state) {
     state.isLoading = true;
   },
-  [FETCH_END](state, data) {
+  [FETCH_GAMES_END](state, data) {
     state.games = _.uniq(data, "gamePk");
     state.gamesCount = state.games.length;
     state.isLoading = false;

@@ -1,8 +1,8 @@
 <template>
-  <div class="game-preview">
-    <RwvGameMeta isPreview :game="game" />
-      <p/>
-  </div>
+    <RwvGameMeta isPreview
+    :game="game"
+    :selectedGamePre.sync="selectedGamePre"
+    />
 </template>
 
 <script>
@@ -13,10 +13,21 @@ export default {
   components: {
     RwvGameMeta
   },
+  data() {
+    return {
+      selectedGamePre: null
+    };
+  },
   props: {
-    game: { type: Object, required: true }
+    game: { type: Object, required: true },
+    selectedGame: { type: Object, required: false }
   },
   computed: {
+  },
+  watch: {
+    selectedGamePre(newValue) {
+      this.$emit("update:selectedGame", newValue);
+    }
   }
 };
 </script>

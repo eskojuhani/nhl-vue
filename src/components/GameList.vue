@@ -1,26 +1,44 @@
 <template>
   <div>
-    <div v-if="isLoading" class="game-preview">Loading games...</div>
-    <div v-else>
-      <div v-if="games.length === 0" class="game-preview">
-        No games are here... yet.
+    <div class="entity-section entity-section-light">
+      <div class="container">
+        <div class="row row-centered">
+          <div class="column-header">
+            <span v-on:click="selectDate(-1)"><i class="fa fa-hand-o-left"></i></span>
+              {{ selectedDate | date }}
+            <span v-on:click="selectDate(1)"><i class="fa fa-hand-o-right"></i></span>
+          </div>
+        </div>
+        <div class="row row-centered">
+          <div class="col-md-12">
+            <!--div v-if="isLoading" class="game-preview">Loading games...</div-->
+            <RwvGamePreview
+              v-for="game in games"
+              :game="game"
+              :key="game.gamePk"
+              :selectedGame.sync="selectedGame"
+            />
+          </div>
+        </div>
       </div>
-      <div v-for="(group, gameDate) in dayGroups" v-bind:key="gameDate">
-        <h2>{{ gameDate | date }}</h2>
-        <RwvGamePreview
-          v-for="game in gamesSorted(group)"
-          :game="game"
-          :key="game.gamePk"
-        />
+    </div>
+    <div v-if="selectedGame" class="entity-section entity-section-dark">
+      <div class="container">
+        <div class="row row-centered">
+            <GraphCanvas :key="index" :game="selectedGame" :home="homePerformance" :away="awayPerformance"></GraphCanvas>
+        </div>
       </div>
-      <!--div>
-        <RwvGamePreview
-          v-for="(game, index) in games"
-          :game="game"
-          :key="index"
-        />
-      </div-->
-      <VPagination :pages="pages" :currentPage.sync="currentPage" />
+    </div>
+    <div v-if="gameEvents" class="entity-section entity-section-light">
+      <div class="container">
+        <div class="row row-centered">
+          <div class="col-md-12">
+            <div v-for="item in gameEvents" class="event-box" :key="item.id">
+              <span>{{ item.description }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -29,14 +47,19 @@
 import { mapGetters /*, mapActions*/ } from 'vuex'
 import _ from 'underscore'
 import RwvGamePreview from "./VGamePreview";
-import VPagination from "./VPagination";
-import { FETCH_GAMES } from "../store/actions.type";
+import GraphCanvas from "./GraphCanvas";
+//import VPagination from "./VPagination";
+import {
+  FETCH_GAMES, FETCH_HOME_PERFORMANCE,
+  FETCH_AWAY_PERFORMANCE, FETCH_GAME_EVENTS
+} from "../store/actions.type";
 
 export default {
   name: 'GameList',
   components: {
     RwvGamePreview,
-    VPagination
+    GraphCanvas
+    //,VPagination
   },
   props: {
     itemsPerPage: {
@@ -47,7 +70,12 @@ export default {
   },
   data() {
     return {
-      currentPage: 1
+      currentPage: 1,
+      index: 1,
+      selectedDate: new Date(),
+      selectedGame: null,
+      homeGameInfo: "",
+      awayGameInfo: ""
     };
   },
   computed: {
@@ -57,7 +85,8 @@ export default {
     listConfig() {
       const filters = {
         offset: (this.currentPage - 1) * this.itemsPerPage,
-        limit: this.itemsPerPage
+        limit: this.itemsPerPage,
+        selectedDate : new Date()
       };
       return {
         filters
@@ -71,48 +100,89 @@ export default {
         ...Array(Math.ceil(this.gamesCount / this.itemsPerPage)).keys()
       ].map(e => e + 1);
     },
-    ...mapGetters(["gamesCount", "isLoading", "games"])
+    ...mapGetters(["gamesCount", "isLoading", "games", "homePerformance", "awayPerformance", "gameEvents"])
   },
   watch: {
+    /*selectedDate(newValue) {
+      window.console.log("GameList.watch.selectedDate", newValue)
+      //this.fetchGames()
+    },*/
     currentPage(newValue) {
-      window.console.log("GameList.watch.currentPage", newValue)
       this.listConfig.filters.offset = (newValue - 1) * this.itemsPerPage;
       this.fetchGames();
-    }
+    },
+    selectedGame(newValue) {
+      this.index++
+      this.fetchHomePerformance(newValue);
+      this.fetchAwayPerformance(newValue);
+      this.fetchGameEvents(newValue);
+      //game.homeGameInfo = "";
+      //game.awayGameInfo = "";
+    },
+    homePerformance(newValue) {
+      window.console.log("homePerformance newValue:", newValue)
+    }/*,
+    gameEvents(newValue) {
+      //window.console.log("gameEvents newValue:", newValue)
+      //this.updateCanvas()
+    }*/
   },
   mounted() {
-    window.console.log("GameList.mounted")
     this.fetchGames();
   },
   methods: {
-    /*
-    ...mapActions(['removeTv', 'getGames']),
-    buyTv() {
-      //this.$store.dispatch('removeTv', 1)
-      this.removeTv(1) // Remove 1 TV
+    selectDate(change) {
+      window.console.log("method.selectDate", change, this.listConfig.filters.selectedDate)
+      this.listConfig.filters.selectedDate.setDate(this.listConfig.filters.selectedDate.getDate() + change)
+      this.selectedDate = this.listConfig.filters.selectedDate
+      //window.console.log("after", this.selectedDate, this.listConfig.filters.selectedDate)
+      this.fetchGames()
     },
-    buyTwoTvs() {
-      //this.$store.dispatch('removeTv', 2)
-      this.removeTv(2) // Remove 1 TV
-    },
-    */
     fetchGames() {
-      window.console.log("fetchGames")
+      this.reset()
       this.$store.dispatch(FETCH_GAMES, this.listConfig);
     },
-    resetPagination() {
-      this.listConfig.offset = 0;
-      this.currentPage = 1;
+
+    reset() {
+      this.selectedGame = null
     },
-    gamesSorted(dayGroup) {
-      return _.sortBy(dayGroup, "homeTeamName")
+
+    fetchHomePerformance(game) {
+      var metadata = {"table": "vPerformanceMA",
+        "where": JSON.stringify([{"team = ": game.homeTeamName}, {"gameDate < ": this.selectedDate}]),
+        "order": "row_num desc"};
+
+      this.$store.dispatch(FETCH_HOME_PERFORMANCE, metadata);
     },
+    fetchAwayPerformance(game) {
+      var metadata = {"table": "vPerformanceMA",
+        "where": JSON.stringify([{"team = ": game.awayTeamName}, {"gameDate < ": this.selectedDate}]),
+        "order": "row_num desc"};
+
+      this.$store.dispatch(FETCH_AWAY_PERFORMANCE, metadata);
+    },
+    fetchGameEvents(game) {
+      var metadata = {"table": "vGameEventsGoals",
+        "where": JSON.stringify([{"gamePk = ": game.gamePk}])
+      };
+
+      this.$store.dispatch(FETCH_GAME_EVENTS, metadata);
+     },
+     daysBetween(date1, date2) {
+      var from = new Date(date1);
+      var to = new Date(date2);
+      var timeDiff = Math.abs(from.getTime() - to.getTime());
+      return Math.ceil(timeDiff / (1000 * 3600 * 24));
+    }
   }
 }
 </script>
 
-<style scoped>
+<style>
 .todolist {
   list-style-type:none
+}
+canvas {
+  border: 1px solid #000;
 }
 </style>

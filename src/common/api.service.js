@@ -2,6 +2,7 @@ import Vue from "vue";
 import axios from "axios";
 import VueAxios from "vue-axios";
 import { API_URL } from "@/common/config";
+import { default as format } from "date-fns/format";
 
 const ApiService = {
   init() {
@@ -22,7 +23,6 @@ const ApiService = {
   },
 
   get(resource, config) {
-    window.console.log("ApiService.get", config)
     return Vue.axios.get(resource, config)
       .catch(error => {
         throw new Error(`[RWV] ApiService ${error}`);
@@ -64,12 +64,20 @@ export const GamesService = {
     });
   },
   get(params) {
+    var gameDate = format(new Date(params.selectedDate), "yyyy-MM-dd")
     var headers = {
       "content-type": "application/json",
       "table": "NHLGame",
-      "where": "[{'detailedState = ': 'Scheduled'}]"
+      "where": JSON.stringify([{"gameDate = ": gameDate }]),
+      "order": "gamePk",
     }
-    return ApiService.get("table", { headers: headers, params: params })
+    return ApiService.get("table", { headers: headers})
+      .then((data) => {
+        return data
+      });
+  },
+  fetch(headers) {
+    return ApiService.get("table", { headers: headers})
       .then((data) => {
         return data
       });

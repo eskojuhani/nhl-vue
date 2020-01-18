@@ -1,6 +1,6 @@
 <template>
   <div id="app">
-    <h1>Hello App!</h1>
+    <h1>NHL - Vue</h1>
     <p>
       <router-link to="/"> HelloWorld </router-link>
       <router-link to="/nhl"> NHL </router-link>
