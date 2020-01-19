@@ -1,6 +1,6 @@
 <template>
   <div v-if="performance" class="entity-list">
-    <div v-for="(item, index) in performance" v-bind:key="index" class="entity-box">
+    <div v-for="(item, index) in performance" v-bind:key="index" class="entity-box game-performance">
       <div>{{ item.gameDate }}</div>
       <div>{{ item.location }}</div>
       <div>{{ item.performance }}</div>
@@ -20,3 +20,9 @@ export default {
   }
 }
 </script>
+
+<style>
+.game-performance {
+  height: 100%;
+}
+</style>
