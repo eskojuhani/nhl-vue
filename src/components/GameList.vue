@@ -15,6 +15,8 @@
             <RwvGamePreview
               v-for="game in games"
               :game="game"
+              :homeGameInfo="game.homeGameInfo"
+              :awayGameInfo="game.awayGameInfo"
               :key="game.gamePk"
               :selectedGame.sync="selectedGame"
             />
@@ -69,6 +71,7 @@
 </template>
 
 <script>
+//import Vue from 'vue'
 import { mapGetters /*, mapActions*/ } from 'vuex'
 import _ from 'underscore'
 import RwvGamePreview from "./VGamePreview";
@@ -79,6 +82,9 @@ import {
   FETCH_GAMES, FETCH_HOME_PERFORMANCE,
   FETCH_AWAY_PERFORMANCE, FETCH_GAME_EVENTS
 } from "../store/actions.type";
+import {
+  SET_GAME_EVENTS
+} from "../store/mutations.type";
 
 export default {
   name: 'GameList',
@@ -138,15 +144,24 @@ export default {
       this.fetchGames();
     },
     selectedGame(newValue) {
+      if (!newValue) {
+        this.$store.commit(SET_GAME_EVENTS, null)
+        return
+      }
       this.fetchHomePerformance(newValue);
       this.fetchAwayPerformance(newValue);
       this.fetchGameEvents(newValue);
+      this.selectedGame = Object.assign(newValue, {homeGameInfo: "", awayGameInfo: ""})
       //game.homeGameInfo = "";
       //game.awayGameInfo = "";
-    }/*,
-    homePerformance(newValue) {
-      window.console.log("homePerformance newValue:", newValue.length)
     },
+    homePerformance(newValue) {
+      this.updateHomeInfo(newValue)
+    },
+    awayPerformance(newValue) {
+      this.updateAwayInfo(newValue)
+    },
+    /*
     gameEvents(newValue) {
       //window.console.log("gameEvents newValue:", newValue)
       //this.updateCanvas()
@@ -173,31 +188,63 @@ export default {
     },
 
     fetchHomePerformance(game) {
-      var metadata = {"table": "vPerformanceMA",
-        "where": JSON.stringify([{"team = ": game.homeTeamName}, {"gameDate < ": this.selectedDate}]),
-        "order": "row_num desc"};
+      if (game) {
+        var metadata = {"table": "vPerformanceMA",
+          "where": JSON.stringify([{"team = ": game.homeTeamName}, {"gameDate < ": this.selectedDate}]),
+          "order": "row_num desc"};
 
-      this.$store.dispatch(FETCH_HOME_PERFORMANCE, metadata);
+        this.$store.dispatch(FETCH_HOME_PERFORMANCE, metadata);
+      }
     },
     fetchAwayPerformance(game) {
-      var metadata = {"table": "vPerformanceMA",
-        "where": JSON.stringify([{"team = ": game.awayTeamName}, {"gameDate < ": this.selectedDate}]),
-        "order": "row_num desc"};
+      if (game) {
+        var metadata = {"table": "vPerformanceMA",
+          "where": JSON.stringify([{"team = ": game.awayTeamName}, {"gameDate < ": this.selectedDate}]),
+          "order": "row_num desc"};
 
-      this.$store.dispatch(FETCH_AWAY_PERFORMANCE, metadata);
+        this.$store.dispatch(FETCH_AWAY_PERFORMANCE, metadata);
+      }
     },
     fetchGameEvents(game) {
-      var metadata = {"table": "vGameEventsGoals",
-        "where": JSON.stringify([{"gamePk = ": game.gamePk}])
-      };
+      if (game) {
+        var metadata = {"table": "vGameEventsGoals",
+          "where": JSON.stringify([{"gamePk = ": game.gamePk}])
+        };
 
-      this.$store.dispatch(FETCH_GAME_EVENTS, metadata);
+        this.$store.dispatch(FETCH_GAME_EVENTS, metadata);
+      }
      },
      daysBetween(date1, date2) {
       var from = new Date(date1);
       var to = new Date(date2);
       var timeDiff = Math.abs(from.getTime() - to.getTime());
       return Math.ceil(timeDiff / (1000 * 3600 * 24));
+    },
+    updateHomeInfo: function (newValue) {
+      window.console.log("homePerformance newValue:", newValue.length)
+      if (this.selectedGame && newValue && newValue.length > 1) {
+         var preGame = newValue[0];
+         var days = this.daysBetween(this.selectedGame.gameDate, preGame.gameDate);
+         window.console.log("days", days)
+         if (days > 0) {
+           var gameInfo = "H: " + preGame.location + (days-1) + preGame.outcome + ' ' + preGame.finalScore;
+           this.selectedGame.homeGameInfo = gameInfo
+           window.console.log("gameInfo:", gameInfo)
+         }
+       }
+    },
+    updateAwayInfo: function (newValue) {
+      window.console.log("awayPerformance newValue:", newValue.length)
+      if (this.selectedGame && newValue && newValue.length > 1) {
+         var preGame = newValue[0];
+         var days = this.daysBetween(this.selectedGame.gameDate, preGame.gameDate);
+         window.console.log("days", days)
+         if (days > 0) {
+           var gameInfo = "A: " + preGame.location + (days-1) + preGame.outcome + ' ' + preGame.finalScore;
+           this.selectedGame.awayGameInfo = gameInfo
+           window.console.log("gameInfo:", gameInfo)
+         }
+       }
     }
   }
 }
