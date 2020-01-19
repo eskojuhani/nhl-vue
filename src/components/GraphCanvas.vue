@@ -7,7 +7,8 @@
 export default {
   name: "GraphCanvas",
   props: {
-    game: { type: Object, required: true },
+    gamekey: { type: Number, required: false },
+    game: { type: Object, required: false },
     home: { type: Array, required: false },
     away: { type: Array, required: false }
   },
@@ -22,11 +23,28 @@ export default {
     window.console.log("GraphCanvas.mounted")
     window.addEventListener('resize', this.onResize)
     window.dispatchEvent(new Event('resize'))
-    this.updateCanvas()
+    //this.updateCanvas();
+  },
+  watch: {
+    game(newValue) {
+      window.console.log("GraphCanvas.watch.game", newValue.homeTeamName);
+      this.canvas = document.getElementById('canvas')
+      this.cx = this.canvas.getContext('2d');
+      this.cx.clearRect(0,0, this.canvas.width, this.canvas.height);
+      this.drawHeader();
+    },
+    home(newValue) {
+      window.console.log("GraphCanvas.watch.home")
+      this.drawGraphs(newValue, '#ff0000', 1)
+    },
+    away(newValue) {
+      window.console.log("GraphCanvas.watch.away")
+      this.drawGraphs(newValue, '#0000ff', 0)
+    }
   },
   methods: {
     onResize(event) {
-      window.console.log("onResize:", event.target.innerWidth);
+      window.console.log("GraphCanvas.onResize:", event.target.innerWidth);
 
       this.initCanvas(event.target.innerWidth * 0.9, event.target.innerHeight * 0.5);
 
@@ -40,10 +58,11 @@ export default {
         this.drawGraphs(this.away, '#0000ff', 0);
       }
     },
-    updateCanvas: function (){
-      this.canvas = document.getElementById('canvas')
-      this.cx = this.canvas.getContext('2d');
-      this.cx.clearRect(0,0, this.canvas.width, this.canvas.height);
+    updateCanvas: function () {
+      window.console.log("GraphCanvas.updateCanvas");
+      //this.canvas = document.getElementById('canvas')
+      //this.cx = this.canvas.getContext('2d');
+      //this.cx.clearRect(0,0, this.canvas.width, this.canvas.height);
 
       this.initCanvas()
       if (this.game) {
@@ -58,6 +77,7 @@ export default {
     },
 
     initCanvas(width = 0, height = 0) {
+      window.console.log("GraphCanvas.initCanvas", width, height);
       if (this.canvas == undefined) {
         this.canvas = document.getElementById('canvas')
         this.cx = this.canvas.getContext('2d');
@@ -65,9 +85,14 @@ export default {
       if (this.canvas == undefined)
         return
 
+      this.cx.clearRect(0,0, this.canvas.width, this.canvas.height);
+
       if (width > 0) {
-        this.canvas.width = width;
-        this.canvas.height = height;
+        if (this.canvas.width != width)
+          this.canvas.width = width;
+
+        if (this.canvas.height != height)
+          this.canvas.height = height;
       }
 
       const rect = this.canvas.getBoundingClientRect();
@@ -164,7 +189,7 @@ export default {
         if (data[i][column] < minValue)
           minValue = data[i][column];
       }
-      window.console.log("max: " + maxValue + ", min:" + minValue);
+
       for (i = 1; i < data.length; i++) {
         var start = data[i-1];
         var end = data[i];

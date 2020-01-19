@@ -24,8 +24,8 @@
     </div>
     <div v-if="selectedGame" class="entity-section entity-section-dark">
       <div class="container">
-        <div class="row row-centered">
-            <GraphCanvas :key="index" :game="selectedGame" :home="homePerformance" :away="awayPerformance"></GraphCanvas>
+        <div class="row row-centered canvas-container">
+            <GraphCanvas :gamekey="selectedGame.gamePk" :game="selectedGame" :home="homePerformance" :away="awayPerformance"></GraphCanvas>
         </div>
       </div>
     </div>
@@ -98,7 +98,6 @@ export default {
   data() {
     return {
       currentPage: 1,
-      index: 1,
       selectedDate: new Date(),
       selectedGame: null,
       homeGameInfo: "",
@@ -139,16 +138,15 @@ export default {
       this.fetchGames();
     },
     selectedGame(newValue) {
-      this.index += 1
       this.fetchHomePerformance(newValue);
       this.fetchAwayPerformance(newValue);
       this.fetchGameEvents(newValue);
       //game.homeGameInfo = "";
       //game.awayGameInfo = "";
-    },
-    homePerformance(newValue) {
-      window.console.log("homePerformance newValue:", newValue)
     }/*,
+    homePerformance(newValue) {
+      window.console.log("homePerformance newValue:", newValue.length)
+    },
     gameEvents(newValue) {
       //window.console.log("gameEvents newValue:", newValue)
       //this.updateCanvas()
@@ -208,6 +206,9 @@ export default {
 <style>
 .todolist {
   list-style-type:none
+}
+.canvas-container {
+  display: block;
 }
 canvas {
   border: 1px solid #000;

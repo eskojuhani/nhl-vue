@@ -26,7 +26,7 @@ export default {
   },
   watch: {
     selectedGamePre(newValue) {
-      window.console.log("RwvGamePreview.watch selectedGamePre:", newValue)
+      window.console.log("RwvGamePreview.watch selectedGamePre:", newValue.homeTeamName);
       this.$emit("update:selectedGame", newValue);
     }
   }
