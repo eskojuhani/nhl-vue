@@ -26,6 +26,7 @@ export default {
   },
   watch: {
     selectedGamePre(newValue) {
+      window.console.log("RwvGamePreview.watch selectedGamePre:", newValue)
       this.$emit("update:selectedGame", newValue);
     }
   }

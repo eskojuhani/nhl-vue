@@ -9,7 +9,7 @@ export default new Router({
   routes: [
     {
       path: "/",
-      component: () => import("@/components/HelloWorld")
+      component: () => import("@/components/GameList")
     },
     {
       name: "NHL",

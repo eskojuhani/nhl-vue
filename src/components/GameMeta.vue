@@ -27,7 +27,7 @@ export default {
   },
   methods: {
     gameSelected: function (game) {
-      window.console.log("selectGame called", game.homeTeamName)
+      window.console.log("GameMeta.selectGame called", game.homeTeamName)
       this.$emit("update:selectedGamePre", game);
     }
   }

@@ -40,6 +40,31 @@
         </div>
       </div>
     </div>
+    <div class="entity-section entity-section-light">
+      <div v-if="selectedGame" class="container">
+        <div class="row row-centered">
+          <div class="column-header">
+              Performances
+          </div>
+        </div>
+        <div class="row row-centered">
+          <div class="col-md-6">
+            <div>{{ selectedGame.homeTeamName }}</div>
+          </div>
+          <div class="col-md-6">
+            <div>{{ selectedGame.awayTeamName }}</div>
+          </div>
+        </div>
+        <div class="row row-centered">
+          <div class="col-md-6">
+            <GamePerformance :performance="homePerformance"></GamePerformance>
+          </div>
+          <div class="col-md-6">
+            <GamePerformance :performance="awayPerformance"></GamePerformance>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -48,7 +73,8 @@ import { mapGetters /*, mapActions*/ } from 'vuex'
 import _ from 'underscore'
 import RwvGamePreview from "./VGamePreview";
 import GraphCanvas from "./GraphCanvas";
-//import VPagination from "./VPagination";
+import GamePerformance from "./GamePerformance";
+
 import {
   FETCH_GAMES, FETCH_HOME_PERFORMANCE,
   FETCH_AWAY_PERFORMANCE, FETCH_GAME_EVENTS
@@ -58,7 +84,8 @@ export default {
   name: 'GameList',
   components: {
     RwvGamePreview,
-    GraphCanvas
+    GraphCanvas,
+    GamePerformance
     //,VPagination
   },
   props: {
@@ -112,7 +139,7 @@ export default {
       this.fetchGames();
     },
     selectedGame(newValue) {
-      this.index++
+      this.index += 1
       this.fetchHomePerformance(newValue);
       this.fetchAwayPerformance(newValue);
       this.fetchGameEvents(newValue);

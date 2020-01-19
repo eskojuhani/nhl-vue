@@ -106,7 +106,7 @@ export default {
     drawGraphs(data, color, isHome) {
       if (this.cx && this.rect && data) {
         var height = this.rect.height;
-        var v_len = height / 600;
+        var v_len = height / 100;
         var h_len = this.rect.width / (data.length + 1);
 
         this.drawMovingAvg(data, "gameMovingAvg3", color, true);
@@ -146,7 +146,7 @@ export default {
 
     drawMovingAvg(data, column, color, isDash) {
       var height = this.rect.height;
-      var v_len = height / 600;
+      var v_len = height / 100;
       var h_len = this.rect.width / (data.length + 1);
 
       this.cx.save();

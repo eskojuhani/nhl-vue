@@ -1,10 +1,10 @@
 <template>
   <div id="app">
     <h1>NHL - Vue</h1>
-    <p>
+    <!--p>
       <router-link to="/"> HelloWorld </router-link>
       <router-link to="/nhl"> NHL </router-link>
-    </p>
+    </p-->
     <router-view></router-view>
   </div>
 </template>
