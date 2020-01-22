@@ -27,18 +27,15 @@ export default {
   },
   watch: {
     game(newValue) {
-      window.console.log("GraphCanvas.watch.game", newValue.homeTeamName);
       this.canvas = document.getElementById('canvas')
       this.cx = this.canvas.getContext('2d');
       this.cx.clearRect(0,0, this.canvas.width, this.canvas.height);
-      this.drawHeader();
+      this.drawHeader(newValue);
     },
     home(newValue) {
-      window.console.log("GraphCanvas.watch.home")
       this.drawGraphs(newValue, '#ff0000', 1)
     },
     away(newValue) {
-      window.console.log("GraphCanvas.watch.away")
       this.drawGraphs(newValue, '#0000ff', 0)
     }
   },
@@ -49,7 +46,7 @@ export default {
       this.initCanvas(event.target.innerWidth * 0.9, event.target.innerHeight * 0.5);
 
       if (this.game) {
-        this.drawHeader();
+        this.drawHeader(this.game);
       }
       if (this.home) {
         this.drawGraphs(this.home, '#ff0000', 1);
@@ -103,7 +100,7 @@ export default {
       this.cx.strokeStyle = '#000';
     },
 
-    drawHeader() {
+    drawHeader(game) {
       if (this.cx) {
         this.cx.clearRect(0, 0, this.rect.width, this.rect.height);
         this.cx.beginPath();
@@ -114,36 +111,38 @@ export default {
 
         this.cx.font = '30px serif';
         this.cx.fillStyle = '#ff0000';
-        this.cx.fillText(this.game.homeTeamName, 10, 40);
+        this.cx.fillText(game.homeTeamName, 10, 40);
 
         var textLen = this.cx.measureText(this.game.homeTeamName);
         this.cx.fillStyle = '#0000ff';
-        this.cx.fillText(this.game.awayTeamName, textLen.width + 20, 40);
-        this.cx.stroke;
+        this.cx.fillText(game.awayTeamName, textLen.width + 20, 40);
+        this.cx.stroke();
         this.cx.font = '10px serif';
         this.cx.fillStyle = '#323232';
         this.cx.fillText("dotted: Avg  3d", 10, 56);
         this.cx.fillText("solid:  Avg 10d", 10, 70);
-        this.cx.stroke;
+        this.cx.stroke();
       }
     },
 
-    drawGraphs(data, color, isHome) {
+    drawGraphs(inData, color, isHome) {
+      let data = inData.slice(0, 80)
+      let row_fix = inData.length -  data.length;
       if (this.cx && this.rect && data) {
         var height = this.rect.height;
         var v_len = height / 100;
         var h_len = this.rect.width / (data.length + 1);
 
-        this.drawMovingAvg(data, "gameMovingAvg3", color, true);
-        this.drawMovingAvg(data, "gameMovingAvg10", color, false);
-        this.drawLocation(data, isHome);
+        this.drawMovingAvg(data, "gameMovingAvg3", color, true, row_fix);
+        this.drawMovingAvg(data, "gameMovingAvg10", color, false, row_fix);
+        this.drawLocation(data, isHome, row_fix);
 
         this.cx.lineWidth = 1;
         for (var i = 0; i < data.length; i++) {
           var item = data[i];
-          var centerX = h_len * item.row_num;
+          var centerX = h_len * (item.row_num - row_fix);
           var centerY = height - (item.performance * v_len);
-          if (item.overtime == 1) {
+          if (item.overtime === 1) {
             this.cx.beginPath();
             this.cx.strokeStyle = color;
             this.cx.fillStyle = color;
@@ -157,7 +156,7 @@ export default {
           this.cx.ellipse(centerX, centerY, 5, 5, 0, 0, Math.PI*2, false);
           this.cx.fill();
           this.cx.stroke();
-          if (item.outcome == "L") {
+          if (item.outcome === "L") {
             this.cx.beginPath();
             this.cx.strokeStyle = '#fff';
             this.cx.fillStyle = '#fff';
@@ -169,7 +168,7 @@ export default {
       }
     },
 
-    drawMovingAvg(data, column, color, isDash) {
+    drawMovingAvg(data, column, color, isDash, row_fix) {
       var height = this.rect.height;
       var v_len = height / 100;
       var h_len = this.rect.width / (data.length + 1);
@@ -196,13 +195,13 @@ export default {
         this.cx.beginPath();
         this.cx.strokeStyle = color;
 
-        if (start.location == 'H')
+        if (start.location === 'H')
           this.cx.lineWidth = 2;
         else
           this.cx.lineWidth = 1;
 
-        this.cx.moveTo(h_len * start.row_num, height - (start[column] * v_len));
-        this.cx.lineTo(h_len * end.row_num, height - (end[column] * v_len));
+        this.cx.moveTo(h_len * (start.row_num - row_fix), height - (start[column] * v_len));
+        this.cx.lineTo(h_len * (end.row_num - row_fix), height - (end[column] * v_len));
 
         this.cx.stroke();
       }
@@ -216,9 +215,9 @@ export default {
       return Math.ceil(timeDiff / (1000 * 3600 * 24));
     },
 
-    drawLocation(data, isHome) {
+    drawLocation(data, isHome, row_fix) {
       //var height = this.rect.height;
-      var y = this.rect.height - ((isHome == 1) ? 20 : 10);
+      var y = this.rect.height - ((isHome === 1) ? 20 : 10);
       var h_len = this.rect.width / (data.length + 1);
 
       this.cx.save();
@@ -243,21 +242,21 @@ export default {
         }
         this.cx.beginPath();
 
-        if (item.location == 'H')
+        if (item.location === 'H')
           this.cx.strokeStyle = '#ff1111';
         else
           this.cx.strokeStyle = '#1111ff'
 
-        this.cx.moveTo(h_len * item.row_num, y);
-        this.cx.lineTo(h_len * item.row_num - h_len + (h_len / 3), y);
-        var lineLen = (h_len * item.row_num) - (h_len * item.row_num - h_len + (h_len / 3));
+        this.cx.moveTo(h_len * (item.row_num - row_fix), y);
+        this.cx.lineTo(h_len * (item.row_num - row_fix) - h_len + (h_len / 3), y);
+        var lineLen = (h_len * (item.row_num - row_fix)) - (h_len * (item.row_num - row_fix) - h_len + (h_len / 3));
         this.cx.stroke();
-        if (item.outcome == "W") {
+        if (item.outcome === "W") {
           this.cx.save();
           this.cx.beginPath();
           this.cx.strokeStyle = '#000';
           this.cx.fillStyle = '#000';
-          this.cx.fillRect(h_len * item.row_num - 3, y - 3, 6, 6);
+          this.cx.fillRect(h_len * (item.row_num - row_fix) - 3, y - 3, 6, 6);
           this.cx.fill();
           this.cx.stroke();
           this.cx.restore();
@@ -270,7 +269,7 @@ export default {
           this.cx.fillStyle = '#000';
           var j = 0
           for (j = 1; j <= lineCaps; j++) {
-            this.cx.fillRect(h_len * item.row_num - lineLen + (lineCap * j) - 1, y - 4, 2, 8);
+            this.cx.fillRect(h_len * (item.row_num - row_fix) - lineLen + (lineCap * j) - 1, y - 4, 2, 8);
             this.cx.fill();
           }
           this.cx.stroke();
