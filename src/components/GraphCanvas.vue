@@ -113,7 +113,7 @@ export default {
         this.cx.fillStyle = '#ff0000';
         this.cx.fillText(game.homeTeamName, 10, 40);
 
-        var textLen = this.cx.measureText(this.game.homeTeamName);
+        var textLen = this.cx.measureText(game.homeTeamName);
         this.cx.fillStyle = '#0000ff';
         this.cx.fillText(game.awayTeamName, textLen.width + 20, 40);
         this.cx.stroke();
