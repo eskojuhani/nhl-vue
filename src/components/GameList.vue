@@ -172,7 +172,6 @@ export default {
   },
   methods: {
     selectDate(change) {
-      window.console.log("method.selectDate", change, this.listConfig.filters.selectedDate)
       this.listConfig.filters.selectedDate.setDate(this.listConfig.filters.selectedDate.getDate() + change)
       this.selectedDate = this.listConfig.filters.selectedDate
       //window.console.log("after", this.selectedDate, this.listConfig.filters.selectedDate)
@@ -221,11 +220,10 @@ export default {
       return Math.ceil(timeDiff / (1000 * 3600 * 24));
     },
     updateHomeInfo: function (newValue) {
-      window.console.log("homePerformance newValue:", newValue.length)
       if (this.selectedGame && newValue && newValue.length > 1) {
          var preGame = newValue[0];
          var days = this.daysBetween(this.selectedGame.gameDate, preGame.gameDate);
-         window.console.log("days", days)
+
          if (days > 0) {
            var gameInfo = "H: " + preGame.location + (days-1) + preGame.outcome + ' ' + preGame.finalScore;
            this.selectedGame.homeGameInfo = gameInfo
@@ -234,11 +232,10 @@ export default {
        }
     },
     updateAwayInfo: function (newValue) {
-      window.console.log("awayPerformance newValue:", newValue.length)
       if (this.selectedGame && newValue && newValue.length > 1) {
          var preGame = newValue[0];
          var days = this.daysBetween(this.selectedGame.gameDate, preGame.gameDate);
-         window.console.log("days", days)
+
          if (days > 0) {
            var gameInfo = "A: " + preGame.location + (days-1) + preGame.outcome + ' ' + preGame.finalScore;
            this.selectedGame.awayGameInfo = gameInfo

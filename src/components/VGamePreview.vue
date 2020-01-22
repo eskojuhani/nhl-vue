@@ -36,7 +36,6 @@ export default {
     },
     homeGameInfo(newValue) {
       window.console.log("RwvGamePreview.watch homeGameInfo:", newValue);
-
     }
   }
 };
