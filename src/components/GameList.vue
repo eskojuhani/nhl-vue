@@ -206,7 +206,7 @@ export default {
     },
     fetchGameEvents(game) {
       if (game) {
-        var metadata = {"table": "vGameEventsGoals",
+        var metadata = {"table": "vGameEventsNHL",
           "where": JSON.stringify([{"gamePk = ": game.gamePk}])
         };
 
